@@ -1,0 +1,41 @@
+name: Ruby
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        ruby:
+          # https://hub.docker.com/r/rubylang/ruby
+          - '2.4-bionic'
+          - '2.5-bionic'
+          - '2.6-bionic'
+          - '2.7-bionic'
+          - 'latest'
+        rails:
+          - 'rails_3.2'
+          - 'rails_4.0'
+          - 'rails_4.1'
+          - 'rails_4.2'
+          - 'rails_5.0'
+          - 'rails_5.1'
+          - 'rails_5.2'
+          - 'rails_6.0'
+          - 'rails_dev'
+    container:
+      image: rubylang/ruby:${{ matrix.ruby }}
+
+    steps:
+      - uses: actions/checkout@master
+      - name: Bundle
+        env:
+          MATRIX_RAILS_VERSION: ${{ matrix.rails }}
+        run: |
+          export BUNDLE_GEMFILE="${GITHUB_WORKSPACE}/gemfiles/${MATRIX_RAILS_VERSION}.gemfile"
+          gem install bundler -v 2.0.1 --force
+          bundle install
+      - name: Test
+        run: |
+          bundle exec rake
